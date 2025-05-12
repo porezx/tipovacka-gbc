@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Tipy podle soutěže{% endblock %}
+
+{% block content %}
+    <h1>Tipy podle soutěže</h1>
+
+    <form method="get" action="/admin/competition_tips">
+        <label for="competition_id">Vyber soutěž:</label>
+        <select name="competition_id" onchange="this.form.submit()">
+            <option value="">-- vyber --</option>
+            {% for competition in competitions %}
+                <option value="{{ competition.id }}" {% if selected_competition and competition.id == selected_competition.id %}selected{% endif %}>
+                    {{ competition.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if selected_competition %}
+        <h2>{{ selected_competition.name }}</h2>
+        
+        {% if selected_competition.description %}
+            <p><strong>Popis:</strong> {{ selected_competition.description }}</p>
+        {% endif %}
+
+        {% if selected_competition.rules %}
+            <p><strong>Pravidla:</strong></p>
+            <div style="white-space: pre-wrap; border-left: 3px solid #ccc; padding-left: 1em; margin-bottom: 1em;">
+                {{ selected_competition.rules }}
+            </div>
+        {% endif %}
+
+        {% if users and matches %}
+            <table border="1" cellpadding="5">
+                <tr>
+                    <th>Datum</th>
+                    <th>Zápas</th>
+                    {% for user in users %}
+                        <th>{{ user.username }}</th>
+                    {% endfor %}
+                </tr>
+                {% for match in matches %}
+                    <tr>
+                        <td>{{ format_datetime_cz(match.match_time) }}</td>
+                        <td>{{ match.team_home }} – {{ match.team_away }}</td>
+                        {% for user in users %}
+                            {% set prediction = predictions.get((user.id, match.id)) %}
+                            <td style="text-align:center;">
+                                {% if prediction %}
+                                    {{ prediction.predicted_home }} : {{ prediction.predicted_away }}
+                                {% else %}
+                                    <em>–</em>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p><em>Žádní uživatelé nebo zápasy pro tuto soutěž.</em></p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

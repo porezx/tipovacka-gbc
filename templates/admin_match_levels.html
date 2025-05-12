@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Úrovně zápasů{% endblock %}
+
+{% block content %}
+    <h1>Správa úrovní zápasů</h1>
+
+    <form method="get" action="/admin/match_levels">
+        <label for="competition_id">Vyber soutěž:</label>
+        <select name="competition_id" id="competition_id" onchange="this.form.submit()">
+            <option value="">-- vyber --</option>
+            {% for comp in competitions %}
+                <option value="{{ comp.id }}" {% if selected_competition and comp.id == selected_competition.id %}selected{% endif %}>
+                    {{ comp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if selected_competition %}
+        <h2>Soutěž: {{ selected_competition.name }}</h2>
+
+        <h3>Přidat novou úroveň</h3>
+        <form method="post" action="/admin/match_levels">
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="competition_id" value="{{ selected_competition.id }}">
+
+            <label>Název:</label>
+            <input type="text" name="name" required>
+
+            <label>Základní body:</label>
+            <input type="number" name="base_points" value="1" required style="width: 4em;">
+
+            <label>Bonus za rozdíl skóre:</label>
+            <input type="number" name="goal_diff_bonus" value="1" required style="width: 4em;">
+
+            <label>Bonus za přesný výsledek:</label>
+            <input type="number" name="exact_score_bonus" value="1" required style="width: 4em;">
+
+            <button type="submit">➕ Přidat úroveň</button>
+        </form>
+
+        {% if levels %}
+            <h3>Existující úrovně</h3>
+            {% for level in levels %}
+                <form method="post" action="/admin/match_levels" style="margin-bottom: 1em;">
+                    <input type="hidden" name="level_id" value="{{ level.id }}">
+                    <input type="hidden" name="competition_id" value="{{ selected_competition.id }}">
+
+                    <label>Název:</label>
+                    <input type="text" name="name" value="{{ level.name }}" required>
+
+                    <label>Základní body:</label>
+                    <input type="number" name="base_points" value="{{ level.base_points }}" required style="width: 4em;">
+
+                    <label>Bonus za rozdíl:</label>
+                    <input type="number" name="goal_diff_bonus" value="{{ level.goal_diff_bonus }}" required style="width: 4em;">
+
+                    <label>Bonus za přesný výsledek:</label>
+                    <input type="number" name="exact_score_bonus" value="{{ level.exact_score_bonus }}" required style="width: 4em;">
+
+                    <button type="submit" name="action" value="update">💾 Uložit</button>
+                    <button type="submit" name="action" value="delete"
+                            onclick="return confirm('Opravdu smazat tuto úroveň?')">🗑️ Smazat</button>
+                </form>
+
+            {% endfor %}
+        {% else %}
+            <p><em>Žádné úrovně zatím nejsou definované.</em></p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

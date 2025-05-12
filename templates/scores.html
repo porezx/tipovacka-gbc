@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Pořadí{% endblock %}
+
+{% block content %}
+    <h1>Tabulka pořadí</h1>
+
+    <form method="get" action="/scores">
+        <label for="competition_id">Vyber soutěž:</label>
+        <select name="competition_id" id="competition_id" onchange="this.form.submit()">
+            <option value="">-- vyber --</option>
+            {% for comp in competitions %}
+                <option value="{{ comp.id }}" {% if comp.id == selected_competition %}selected{% endif %}>
+                    {{ comp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if scores %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Pořadí</th>
+                <th>Hráč</th>
+                <th>Body</th>
+            </tr>
+            {% for user, points in scores %}
+            <tr>
+                <td>{{ loop.index }}.</td>
+                <td>{{ user }}</td>
+                <td>{{ points }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% elif selected_competition %}
+        <p><em>Žádní hráči nebo žádné body v této soutěži.</em></p>
+    {% endif %}
+{% endblock %}

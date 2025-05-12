@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Tipovačka{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>🏆 Tipovačka</h1>
+        <nav>
+           <strong>🧍 Hráč / Veřejné:</strong>
+
+            {% if not session.get('user_id') %}
+                <a href="/register">1️⃣ Registrace</a> |
+            {% endif %}
+
+            <a href="/predict">2️⃣ Tipování</a> |
+            <a href="/tips">3️⃣ Moje tipy</a> |
+            <a href="/scores">4️⃣ Pořadí</a>
+
+            {% if session.get('user_id') %}
+                ✅ Přihlášen jako <strong>{{ session['username'] }}</strong> |
+                <a href="/logout">Odhlásit</a> |
+                <a href="/user/{{ session['username'] }}">🎯 Můj dashboard</a>
+            {% else %}
+                <a href="/login">🔐 Přihlášení</a>
+            {% endif %}
+
+            <br>
+
+            {% if session.get('is_admin') %}
+                <hr style="margin: 0.5em 0;">
+                <strong>🛠️ Admin:</strong>
+                <a href="/admin/competitions">A1 Soutěže</a> |
+                <a href="/admin/matches">A2 Zápasy</a> |
+                <a href="/admin/users">A3 Uživatelé</a> |
+                <a href="/admin/user_tips">A4 Tipy uživatelů</a> |
+                <a href="/admin/competition_tips">A5 Tipy podle soutěže</a> |
+                <a href="/result">A6 Výsledky</a>
+                <a href="/admin/match_levels">A7 Úrovně zápasů</a>
+                <a href="/admin/scores">A8 Admin tabulky</a>
+            {% endif %}
+
+
+
+        </nav>
+
+        <hr>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div style="background-color: #e0ffe0; border: 1px solid #4caf50; padding: 10px; margin-bottom: 1em;">
+              {% for message in messages %}
+                <p style="margin: 0;">{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+
+    <hr>
+    <footer>
+        <p style="font-size: small;">&copy; {{ now().year }} Tipovačka – Flask na Synology</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Soutěže{% endblock %}
+
+{% block content %}
+    <h1>Seznam soutěží</h1>
+
+   <p><strong>Po vytvoření soutěže můžete úrovně zápasů a jejich bodování přidat v sekci <a href="/admin/match_levels">Úrovně zápasů</a>.</strong></p>
+
+    <form method="post" action="/admin/competitions">
+        <input type="hidden" name="action" value="add">
+
+        <label for="name">Název soutěže:</label>
+        <input type="text" name="name" required><br>
+
+        <label for="start_date">Začátek:</label>
+        <input type="date" name="start_date"><br>
+
+        <label for="end_date">Konec:</label>
+        <input type="date" name="end_date"><br>
+        
+        <label for="description">Popis:</label><br>
+        <textarea name="description" rows="3" cols="60"></textarea><br>
+
+        <label for="rules">Pravidla:</label><br>
+        <textarea name="rules" rows="6" cols="60"></textarea><br>
+
+        <hr>
+        <button type="submit">➕ Přidat soutěž</button>
+    </form>
+
+    <hr>
+
+    <script>
+    function toggleEdit(id) {
+        document.getElementById('view-' + id).style.display = 'none';
+        document.getElementById('edit-' + id).style.display = 'block';
+    }
+    </script>
+
+    {% for competition in competitions %}
+        <div id="view-{{ competition.id }}" style="margin-bottom: 1em;">
+            <h3 style="margin-bottom: 0.3em;">
+                {{ competition.name }} (ID {{ competition.id }}) |
+                {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '—' }} – 
+                {{ competition.end_date.strftime('%d.%m.%Y') if competition.end_date else '—' }} |
+            </h3>
+
+            <div style="font-size: 0.95em; margin-bottom: 0.3em;">
+                <strong>Popis:</strong> {{ competition.description or '—' }}<br>
+                <strong>Pravidla:</strong> {{ competition.rules or '—' }}
+            </div>
+
+            {% if competition.users %}
+                <div style="font-size: 0.9em; margin-bottom: 0.3em;">
+                    <strong>Hráči:</strong>
+                    {{ competition.users | sort(attribute='username') | map(attribute='username') | join(', ') }}
+                </div>
+            {% else %}
+                <div style="font-size: 0.9em; margin-bottom: 0.3em;"><em>Žádní přihlášení hráči</em></div>
+            {% endif %}
+
+            <button onclick="toggleEdit({{ competition.id }})">✏️ Upravit</button>
+
+            <form method="post" action="/admin/competitions" style="display:inline;" onsubmit="return confirm('Opravdu smazat tuto soutěž?')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="competition_id" value="{{ competition.id }}">
+                <button type="submit">🗑️ Smazat</button>
+            </form>
+
+            <hr>
+        </div>
+
+        <div id="edit-{{ competition.id }}" style="display:none; margin-bottom: 2em;">
+            <form method="post">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="competition_id" value="{{ competition.id }}">
+
+                <h3>Úprava: {{ competition.name }}</h3>
+
+                <label>Název:</label>
+                <input type="text" name="name" value="{{ competition.name }}" required>
+
+                <label>Začátek:</label>
+                <input type="date" name="start_date" value="{{ competition.start_date.strftime('%Y-%m-%d') if competition.start_date else '' }}">
+
+                <label>Konec:</label>
+                <input type="date" name="end_date" value="{{ competition.end_date.strftime('%Y-%m-%d') if competition.end_date else '' }}">
+
+                <label>Popis:</label><br>
+                <textarea name="description" rows="3" cols="60">{{ competition.description or '' }}</textarea><br>
+
+                <label>Pravidla:</label><br>
+                <textarea name="rules" rows="6" cols="60">{{ competition.rules or '' }}</textarea><br>
+
+                <button type="submit">💾 Uložit změny</button>
+            </form>
+
+            <button onclick="document.getElementById('edit-{{ competition.id }}').style.display='none'; document.getElementById('view-{{ competition.id }}').style.display='block';">❌ Zrušit</button>
+
+            <hr>
+        </div>
+    {% endfor %}
+
+
+{% endblock %}

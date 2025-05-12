@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Moje tipy{% endblock %}
+
+{% block content %}
+<h1>Moje tipy – {{ user.username }}</h1>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Datum</th>
+        <th>Zápas</th>
+        <th>Můj tip</th>
+        <th>Možnost úpravy</th>
+    </tr>
+    {% for match in matches %}
+    {% set pred = prediction_map.get(match.id) %}
+    <tr>
+        <td>{{ match.match_time.strftime('%d.%m.%Y %H:%M') }}</td>
+        <td>{{ match.team_home }} – {{ match.team_away }}</td>
+        <td>
+            {% if pred %}
+                {{ pred.predicted_home }} : {{ pred.predicted_away }}
+            {% else %}
+                <em>bez tipu</em>
+            {% endif %}
+        </td>
+        <td>
+            {% if match.match_time > now %}
+                <form method="post" action="/predict">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="match_id" value="{{ match.id }}">
+                    <input type="number" name="predicted_home_{{ match.id }}" value="{{ pred.predicted_home if pred else '' }}" required>
+                    <input type="number" name="predicted_away_{{ match.id }}" value="{{ pred.predicted_away if pred else '' }}" required>
+                    <button type="submit">Uložit</button>
+                </form>
+            {% else %}
+                <em>Zápas uzavřen</em>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

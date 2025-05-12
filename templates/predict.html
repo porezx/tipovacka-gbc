@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Registrace{% endblock %}
+
+{% block content %}
+    <h1>Zadat/Upravit více tipů najednou</h1>
+    <p><strong>Hráč:</strong> {{ session['username'] }}</p>
+    {% if user_id and matches %}
+        <form method="post" action="/predict">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+
+            <table border="1" cellpadding="5">
+                <tr>
+                    <th>Datum</th>
+                    <th>Zápas</th>
+                    <th>Skóre</th>
+                </tr>
+                {% for match in matches %}
+                    <tr>
+                        <td>{{ format_datetime_cz(match.match_time) }}</td>
+                        <td>{{ match.team_home }} – {{ match.team_away }}</td>
+
+                        {% set prediction = prediction_map.get((user_id, match.id)) %}
+                        {% if match.match_time > now() %}
+                            <td style="text-align: center;">
+                                <input type="number" name="predicted_home_{{ match.id }}" value="{{ prediction.predicted_home if prediction else '' }}" style="width: 3em;"> :
+                                <input type="number" name="predicted_away_{{ match.id }}" value="{{ prediction.predicted_away if prediction else '' }}" style="width: 3em;">
+                            </td>
+                        {% else %}
+                            <td style="text-align: center;">
+                                {% if prediction %}
+                                    {{ prediction.predicted_home }} : {{ prediction.predicted_away }}
+                                {% else %}
+                                    <em>Netipováno</em>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <br>
+            <button type="submit">💾 Uložit všechny tipy</button>
+        </form>
+    {% endif %}
+{% endblock %}

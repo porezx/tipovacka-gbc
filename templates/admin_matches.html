@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Správa zápasů{% endblock %}
+
+{% block content %}
+<h1>Správa zápasů</h1>
+
+<h2>Dávkové nahrání zápasů (XLSX)</h2>
+<form method="post" action="/admin/matches" enctype="multipart/form-data" style="margin-bottom: 2em;">
+    <input type="hidden" name="action" value="import">
+
+    <label>Soutěž:</label>
+    <select name="competition_id" required>
+        {% for competition in competitions %}
+            <option value="{{ competition.id }}">{{ competition.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Soubor (.xlsx):</label>
+    <input type="file" name="match_file" accept=".xlsx" required>
+
+    <button type="submit">📂 Importovat zápasy</button>
+</form>
+
+<p><strong>Očekávaný formát XLSX:</strong></p>
+<pre>
+Sloupce: DATUM, ČAS, ZÁPAS, (hostující tým ve sloupci bez názvu), Úroveň (nepovinně)
+
+Příklad řádku:
+9. května | 16:20 | Rakousko | Finsko | Základní skupina
+</pre>
+
+<h2>Přidat nový zápas</h2>
+<form method="post" action="/admin/matches" style="margin-bottom: 2em;">
+    <input type="hidden" name="action" value="add">
+
+    <label>Datum a čas:</label>
+    <input type="datetime-local" name="match_time" required>
+
+    <label>Domácí:</label>
+    <input type="text" name="team_home" required>
+
+    <label>Hosté:</label>
+    <input type="text" name="team_away" required>
+
+    <label>Soutěž:</label>
+    <select name="competition_id" required>
+        {% for competition in competitions %}
+            <option value="{{ competition.id }}">{{ competition.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Úroveň:</label>
+    <select name="match_level_id">
+        <option value="">-- žádná --</option>
+        {% for level in all_levels %}
+            <option value="{{ level.id }}">{{ level.name }} ({{ level.base_points }}b)</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">➕ Přidat zápas</button>
+</form>
+
+<h2>Existující zápasy podle soutěže</h2>
+
+{% for competition, matches in matches_by_competition.items() %}
+    <h3>{{ competition.name }} (ID {{ competition.id }})</h3>
+
+    {% for match in matches %}
+        {% set index = loop.index %}
+        <form method="post" action="/admin/matches" style="margin-bottom: 1em; border-bottom: 1px solid #ccc; padding-bottom: 0.5em;">
+            {{ index }}.&nbsp;&nbsp;
+            <input type="hidden" name="match_id" value="{{ match.id }}">
+
+            <label>Datum a čas:</label>
+            <input type="datetime-local" name="match_time"
+                   value="{{ match.match_time.strftime('%Y-%m-%dT%H:%M') if match.match_time else '' }}" required>
+
+            <label>Domácí:</label>
+            <input type="text" name="team_home" value="{{ match.team_home }}" required>
+
+            <label>Hosté:</label>
+            <input type="text" name="team_away" value="{{ match.team_away }}" required>
+
+            <label>Úroveň:</label>
+            <select name="match_level_id">
+                <option value="">-- žádná --</option>
+                {% for level in levels_by_competition[competition.id] %}
+                    <option value="{{ level.id }}" {% if match.match_level_id == level.id %}selected{% endif %}>
+                        {{ level.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" name="action" value="update" style="margin-top: 0.5em;">💾 Uložit</button>
+            <button type="submit" name="action" value="delete" style="margin-top: 0.5em; margin-left: 1em;">🗑️ Smazat</button>
+        </form>
+    {% endfor %}
+{% endfor %}
+{% endblock %}

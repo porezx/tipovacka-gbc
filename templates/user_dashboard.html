@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} – soutěže{% endblock %}
+
+{% block content %}
+<h1>Uživatel: {{ user.username }}</h1>
+
+<h2>Aktivní soutěže</h2>
+{% if registered %}
+    <ul>
+    {% for comp in registered %}
+        <li>{{ comp.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p><em>Uživatel zatím není v žádné soutěži.</em></p>
+{% endif %}
+
+<hr>
+
+<h2>Přihlásit se do dalších soutěží</h2>
+{% if not_registered %}
+    <form method="post">
+        {% for comp in not_registered %}
+            <label>
+                <input type="checkbox" name="competition_ids" value="{{ comp.id }}">
+                {{ comp.name }}
+            </label><br>
+        {% endfor %}
+        <br>
+        <button type="submit">Přihlásit do vybraných</button>
+    </form>
+{% else %}
+    <p><em>Uživatel je již přihlášen do všech soutěží.</em></p>
+{% endif %}
+{% endblock %}

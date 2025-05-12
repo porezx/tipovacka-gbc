@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Pořadí{% endblock %}
+
+{% block content %}
+    <h1>Tabulka pořadí</h1>
+
+    <form method="get" action="/admin/scores">
+        <label for="competition_id">Vyber soutěž:</label>
+        <select name="competition_id" id="competition_id" onchange="this.form.submit()">
+            <option value="">-- vyber --</option>
+            {% for comp in competitions %}
+                <option value="{{ comp.id }}" {% if comp.id == selected_competition %}selected{% endif %}>
+                    {{ comp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if scores %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Pořadí</th>
+                <th>Hráč</th>
+                <th>Body</th>
+            </tr>
+            {% for user, points in scores %}
+            <tr>
+                <td>{{ loop.index }}.</td>
+                <td>{{ user }}</td>
+                <td>{{ points }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    <h2>Celkové pořadí s tiebreakery</h2>
+    <table border="1" cellpadding="5">
+      <tr>
+        <th>Poř.</th>
+        <th>Hráč</th>
+        <th>Body celkem</th>
+        <th>Základní body</th>
+        <th>Bonus rozdíl</th>
+        <th>Bonus přesně</th>
+      </tr>
+      {% for e in final_scores %}
+      <tr>
+        <td>{{ e.rank }}</td>
+        <td>{{ e.username }}</td>
+        <td>{{ e.total }}</td>
+        <td>{{ e.base_pts }}</td>
+        <td>{{ e.diff_pts }}</td>
+        <td>{{ e.exact_pts }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <h2>Pořadí hráčů den po dni</h2>
+    <table border="1" cellpadding="5">
+      <tr>
+        <th>Den</th>
+        {% for entry in final_scores %}
+          <th>{{ entry.username }}</th>
+        {% endfor %}
+      </tr>
+      {% for day, rank_map in daily_ranks.items() %}
+        <tr>
+          <td>{{ day.strftime('%d.%m.%Y') }}</td>
+          {% for entry in final_scores %}
+            {% set db = daily_breakdown[day][entry.username] %}
+            <td>
+              {{ rank_map[entry.username] }}
+              <small>( {{ db.total }}-{{ db.base_pts }}-{{ db.diff_pts }}-{{ db.exact_pts }} )</small>
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+        
+    <h2>Body podle dnů</h2>
+      <table border="1" cellpadding="5">
+        <tr>
+          <th>Den</th>
+          {% for user, _ in scores %}
+            <th>{{ user }}</th>
+          {% endfor %}
+        </tr>
+        {% for day, day_map in daily_scores.items()|reverse %}
+          <tr>
+            <td>{{ day.strftime('%d.%m.%Y') }}</td>
+            {% for user, _ in scores %}
+              <td>{{ day_map[user] }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
+
+    <h2>Pořadí hráčů den po dni (kumulativně)</h2>
+    <table border="1" cellpadding="5">
+      <tr>
+        <th>Den</th>
+        {% for entry in final_scores %}
+          <th>{{ entry.username }}</th>
+        {% endfor %}
+      </tr>
+      {% for day, rank_map in daily_ranks.items() %}
+        <tr>
+          <td>{{ day.strftime('%d.%m.%Y') }}</td>
+          {% for entry in final_scores %}
+            {# místo per-denního breakdownu vezmeme kumulativní snapshot #}
+            {% set db = cumulative_breakdown[day][entry.username] %}
+            <td>
+              {{ rank_map[entry.username] }}
+              <small>( {{ db.total }}–{{ db.base_pts }}–{{ db.diff_pts }}–{{ db.exact_pts }} )</small>
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+
+
+    <h2>Vývoj pozice hráčů</h2>
+    <img src="{{ rank_graph }}" alt="Vývoj pozice" style="max-width:100%; height:auto;">
+
+    {% elif selected_competition %}
+        <p><em>Žádní hráči nebo žádné body v této soutěži.</em></p>
+    {% endif %}
+{% endblock %}

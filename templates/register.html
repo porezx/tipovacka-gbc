@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Registrace uživatele{% endblock %}
+
+{% block content %}
+    <h1>Registrace do tipovačky</h1>
+    <form method="post" action="/register">
+        <label for="username">Uživatelské jméno:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="secret_word">Tajné slovo:</label>
+        <input type="text" id="secret_word" name="secret_word" required><br><br>
+
+        <label for="competition_ids">Vyber soutěže:</label><br>
+        <select id="competition_ids" name="competition_ids" multiple size="5" required>
+            {% for comp in competitions %}
+                <option value="{{ comp.id }}">{{ comp.name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <button type="submit">Registrovat</button>
+    </form>
+{% endblock %}

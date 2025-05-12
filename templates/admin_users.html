@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Uživatelé{% endblock %}
+
+{% block content %}
+    <h1>Seznam uživatelů</h1>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Jméno</th>
+            {% for competition in competitions %}
+                <th>{{ competition.name }}</th>
+            {% endfor %}
+            <th>Uložit</th>
+            <th>Smazat</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <form method="post" action="/admin/users">
+                <td>{{ user.id }}</td>
+                <td>
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="text" name="username" value="{{ user.username }}" required>
+                    <BR>
+                    <label>Custom ID:</label>
+                    <input type="number" name="custom_id" value="{{ user.custom_id }}" style="width:4em;">
+                </td>
+                {% for competition in competitions %}
+                    <td style="text-align: center;">
+                        <input type="checkbox" name="competition_ids[]" value="{{ competition.id }}"
+                               {% if competition in user.competitions %}checked{% endif %}>
+                    </td>
+                {% endfor %}
+                <td>
+                    <button type="submit" name="action" value="update">💾</button>
+                </td>
+            </form>
+            <form method="post" action="/admin/users">
+                <td>
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <button type="submit" name="action" value="delete"
+                            onclick="return confirm('Opravdu smazat tohoto uživatele?')">🗑️</button>
+                </td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

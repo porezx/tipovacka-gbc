@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Registrace{% endblock %}
+
+{% block content %}
+    <h1>Zadat výsledky zápasů</h1>
+
+    <form method="get" action="/result">
+        <label for="competition_id">Vyber soutěž:</label>
+        <select name="competition_id" id="competition_id" onchange="this.form.submit()">
+            <option value="">-- vyber --</option>
+            {% for comp in competitions %}
+                <option value="{{ comp.id }}" {% if comp.id == selected_competition %}selected{% endif %}>
+                    {{ comp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if matches %}
+        <form method="post" action="/result">
+            <input type="hidden" name="competition_id" value="{{ selected_competition }}">
+            <table border="1" cellpadding="5">
+                <tr>
+                    <th>Zápas</th>
+                    <th>Góly domácí</th>
+                    <th>Góly hosté</th>
+                </tr>
+                {% for match in matches %}
+                <tr>
+                    <td>{{ match.match_time.strftime('%d.%m.%Y %H:%M') }} – {{ match.team_home }} vs. {{ match.team_away }}</td>
+                    <td>
+                        <input type="number" name="result_home_{{ match.id }}"
+                               value="{{ match.result_home if match.result_home is not none else '' }}">
+                    </td>
+                    <td>
+                        <input type="number" name="result_away_{{ match.id }}"
+                               value="{{ match.result_away if match.result_away is not none else '' }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <button type="submit">💾 Uložit všechny výsledky</button>
+        </form>
+    {% endif %}
+{% endblock %}

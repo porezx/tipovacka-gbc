@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Přehled tipů{% endblock %}
+
+{% block content %}
+    <h1>Přehled všech tipů</h1>
+
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+        <tr style="background-color: #f0f0f0;">
+            <th style="text-align: left;">Zápas</th>
+            <th style="text-align: center;">Výsledek</th>
+            <th style="text-align: center;">Hráč</th>
+            <th style="text-align: center;">Tip</th>
+            <th style="text-align: center;">Body</th>
+        </tr>
+
+        {% for match_id, data in tips_by_match.items() %}
+            {% set match = data.match %}
+            {% set predictions = data.predictions %}
+
+            {% if predictions %}
+                {% for pred in predictions %}
+                    <tr>
+                        {% if loop.first %}
+                            <td rowspan="{{ predictions|length }}">
+                                {{ match.match_time.strftime('%d.%m.%Y %H:%M') }}<br>
+                                <strong>{{ match.team_home }} vs {{ match.team_away }}</strong>
+                            </td>
+                            <td rowspan="{{ predictions|length }}" style="text-align: center;">
+                                {% if match.result_home is not none %}
+                                    <strong>{{ match.result_home }} : {{ match.result_away }}</strong>
+                                {% else %}
+                                    <em>?</em>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+
+                        <td style="text-align: center;">{{ pred.username }}</td>
+                        <td style="text-align: center;">{{ pred.predicted_home }} : {{ pred.predicted_away }}</td>
+                        <td style="text-align: center;">
+                            {% if pred.points is not none %}
+                                {{ pred.points }}
+                            {% else %}
+                                –
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td>{{ match.match_time.strftime('%d.%m.%Y %H:%M') }}<br>
+                        <strong>{{ match.team_home }} vs {{ match.team_away }}</strong>
+                    </td>
+                    <td style="text-align: center;">
+                        {% if match.result_home is not none %}
+                            <strong>{{ match.result_home }} : {{ match.result_away }}</strong>
+                        {% else %}
+                            <em>?</em>
+                        {% endif %}
+                    </td>
+                    <td colspan="3" style="text-align: center;"><em>Žádné tipy</em></td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+{% endblock %}
